@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@tenderly/actions-test": "^0.1.0"
+  },
+  "scripts": {
+    "local-w3-run": "ts-node test/testQueue.ts"
+  },
+  "dependencies": {
+    "env-var": "^7.3.0",
+    "ethers": "^5.7.2"
+  }
+}

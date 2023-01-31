@@ -1,0 +1,28 @@
+account_id: ""
+actions:
+  zeryx/weavr:
+    runtime: v2
+    sources: actions
+    specs:
+      listenForProposals:
+        description: Checks if a proposal has been submitted on Weavr
+        function: listen:listenForProposalfn
+        trigger:
+          type: transaction
+          transaction:
+            filters:
+              - contract:
+                  address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+              - network: 42161
+              - eventEmitted:
+                name: Proposal
+      queueProposals:
+        description: Queues a proposal for processing if any are found in state, and time has expired
+        function: queue:queueProposalsfn
+        trigger:
+          type: block
+          block:
+            filters:
+              - network: 42161
+              - every: 100
+project_slug: "zeryx"
