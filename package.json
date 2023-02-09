@@ -6,6 +6,7 @@
     "local-w3-run": "ts-node test/testQueue.ts"
   },
   "dependencies": {
+    "@types/node": "^18.11.18",
     "env-var": "^7.3.0",
     "ethers": "^5.7.2"
   }

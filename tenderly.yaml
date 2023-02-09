@@ -6,23 +6,25 @@ actions:
     specs:
       listenForProposals:
         description: Checks if a proposal has been submitted on Weavr
-        function: listen:listenForProposalfn
+        function: listen:listenForProposalFn
         trigger:
           type: transaction
           transaction:
+            status: MINED
             filters:
-              - contract:
-                  address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
               - network: 42161
-              - eventEmitted:
-                name: Proposal
+                contract:
+                  address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+                eventEmitted:
+                  name: Proposal
+                status: success
+
       queueProposals:
         description: Queues a proposal for processing if any are found in state, and time has expired
-        function: queue:queueProposalsfn
+        function: queue:queueProposalsFn
         trigger:
           type: block
           block:
-            filters:
-              - network: 42161
-              - every: 100
-project_slug: "zeryx"
+            network: 42161
+            blocks: 100
+
