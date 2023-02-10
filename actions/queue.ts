@@ -20,7 +20,7 @@ export const queueProposalsFn: ActionFn = async (context: Context, event: Event)
     const wallet = new ethers.Wallet(PRIVATE_KEY, provider)
     // let's assume that arbitrum takes 0.5 sec per block, replace this with a block.timestamp when available.
     const week_blocks = 86400*7*(1/0.5);
-    const current_proposals = await context.storage.getJson("current_proposals")
+    const current_proposals: Array<any> = await context.storage.getJson("current_proposals")
     const weavr = new ethers.Contract(WEAVR_ADDRESS, Weavr.abi, wallet)
     const final_proposals = current_proposals.filter(async (obj: { block_number: number; id: any; }) => {
         console.log("found logged proposal: ", obj)
