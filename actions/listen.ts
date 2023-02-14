@@ -59,3 +59,4 @@ export const updateOnStateChangeFn: ActionFn = async (context: Context, event: E
 	console.log("Proposal withdrawn: ", id);
 	await notifyDiscord(`Proposal ${id} state is now ${state}, https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
 }
+

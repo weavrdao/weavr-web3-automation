@@ -19,31 +19,30 @@ export const queueProposalsFn: ActionFn = async (context: Context, event: Event)
     const provider_key = await context.secrets.get("PROVIDER_KEY")
     const provider = ethers.getDefaultProvider(`https://arbitrum-mainnet.infura.io/v3/${provider_key}`)
     const wallet = new ethers.Wallet(PRIVATE_KEY, provider)
-    // let's assume that arbitrum takes 0.5 sec per block, replace this with a block.timestamp when available.
-    const week_blocks = 86400*7*(1/0.5);
+    // let's assume that arbitrum takes 0.3 sec per block, replace this with a block.timestamp when available.
+    const week_blocks = 86400*8*(1/0.3);
     const current_proposals: Array<any> = await context.storage.getJson("current_proposals")
     const weavr = new ethers.Contract(WEAVR_ADDRESS, Weavr.abi, wallet)
-    const final_proposals = current_proposals.filter(async (obj: { block_number: number; id: any; }) => {
-        console.log("found logged proposal: ", obj)
-        if (obj.block_number + week_blocks <= blockEvent.blockNumber) {
-            console.log("proposal is ready to queue: ", obj.id)
+    const final_proposals = current_proposals.filter(async (record: { block_number: number; id: any; }) => {
+        console.log("found logged proposal: ", record)
+        if (blockEvent.blockNumber > record.block_number + week_blocks) {
+            console.log("proposal is ready to queue: ", record.id)
             try {
-                await weavr.callStatic.queueProposal(parseInt(obj.id))
-                await weavr.queueProposal(parseInt(obj.id))
-                console.log("Operation succeeded: ", obj.id)
-                await notifyDiscord(`Proposal ${obj.id} has been queued`, context)
+                await weavr.callStatic.queueProposal(parseInt(record.id))
+                await weavr.queueProposal(parseInt(record.id))
+                console.log("Operation succeeded: ", record.id)
+                await notifyDiscord(`Proposal ${record.id} has been queued`, context)
 
             } catch (e) {
                 console.log("Operation would fail:")
-                await notifyDiscord(`Proposal ${obj.id} would fail to queue due to an error: ${e}`, context)
+                await notifyDiscord(`Proposal ${record.id} would fail to queue due to an error: ${e}`, context)
                 console.log(e)
             }
             return false
         } else {
-            console.log("proposal is not ready to queue: ", obj.id)
-            console.log("proposal block number: ", obj.block_number)
+            console.log("proposal is not ready to queue: ", record.id)
             console.log("current block number: ", blockEvent.blockNumber)
-            console.log("week blocks: ", week_blocks)
+            console.log("block when proposal is ready: ", record.block_number + week_blocks)
             return true
         }
     });
