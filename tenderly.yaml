@@ -27,4 +27,18 @@ actions:
           block:
             network: 42161
             blocks: 100
+      updateOnStateChange:
+        description: Checks if an existing proposal has been withdrawn on Weavr
+        function: listen:updateOnStateChangeFn
+        trigger:
+          type: transaction
+          transaction:
+            status: MINED
+            filters:
+              - network: 42161
+                contract:
+                  address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+                eventEmitted:
+                  name: ProposalStateChange
+                status: success
 

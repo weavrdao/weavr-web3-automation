@@ -5,6 +5,7 @@ import {
 } from '@tenderly/actions';
 import { ethers } from "ethers";
 import Weavr from "./Weavr.json"
+import {notifyDiscord} from "./discord";
 
 /***
  *  Queues a proposal that has been logged for a week, uses context.storage and block numbers to calculate time
@@ -30,8 +31,11 @@ export const queueProposalsFn: ActionFn = async (context: Context, event: Event)
                 await weavr.callStatic.queueProposal(parseInt(obj.id))
                 await weavr.queueProposal(parseInt(obj.id))
                 console.log("Operation succeeded: ", obj.id)
+                await notifyDiscord(`Proposal ${obj.id} has been queued`, context)
+
             } catch (e) {
                 console.log("Operation would fail:")
+                await notifyDiscord(`Proposal ${obj.id} would fail to queue due to an error: ${e}`, context)
                 console.log(e)
             }
             return false
@@ -40,9 +44,9 @@ export const queueProposalsFn: ActionFn = async (context: Context, event: Event)
             console.log("proposal block number: ", obj.block_number)
             console.log("current block number: ", blockEvent.blockNumber)
             console.log("week blocks: ", week_blocks)
-            return true}
+            return true
+        }
     });
     await context.storage.putJson("current_proposals", final_proposals);
-    console.log("Queueing process complete")
 
 }
