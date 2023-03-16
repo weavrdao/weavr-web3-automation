@@ -19,17 +19,9 @@ actions:
                   name: Proposal
                 status: success
 
-      queueProposals:
-        description: Queues a proposal for processing if any are found in state, and time has expired
-        function: queue:queueProposalsFn
-        trigger:
-          type: block
-          block:
-            network: 42161
-            blocks: 100
-      updateOnStateChange:
-        description: Checks if an existing proposal has been withdrawn on Weavr
-        function: listen:updateOnStateChangeFn
+      updateOnProposalStateChange:
+        description: Notifies when a proposals' state has been modified
+        function: listen:UpdateOnProposalStateChangeFn
         trigger:
           type: transaction
           transaction:
@@ -42,3 +34,17 @@ actions:
                   name: ProposalStateChange
                 status: success
 
+        UpdateOnParticipantStateChange:
+          description: Notifies when a participants' state has been modified
+          function: listen:UpdateOnParticipantStateChangeFn
+          trigger:
+            type: transaction
+            transaction:
+              status: MINED
+              filters:
+                - network: 42161
+                  contract:
+                    address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+                  eventEmitted:
+                    name: ParticipantChange
+                  status: success
