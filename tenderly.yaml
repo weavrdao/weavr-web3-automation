@@ -34,17 +34,46 @@ actions:
                   name: ProposalStateChange
                 status: success
 
-        UpdateOnParticipantStateChange:
-          description: Notifies when a participants' state has been modified
-          function: listen:UpdateOnParticipantStateChangeFn
-          trigger:
-            type: transaction
-            transaction:
-              status: MINED
-              filters:
-                - network: 42161
-                  contract:
-                    address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
-                  eventEmitted:
-                    name: ParticipantChange
-                  status: success
+
+      UpdateOnParticipantStateChange:
+        description: Notifies when a participants' state has been modified
+        function: listen:UpdateOnParticipantStateChangeFn
+        trigger:
+          type: transaction
+          transaction:
+            status: MINED
+            filters:
+              - network: 42161
+                contract:
+                  address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+                eventEmitted:
+                  name: ParticipantChange
+                status: success
+      listenForProposalVotes:
+        description: Notifies when a Participant has voted on a proposal
+        function: listen:listenForProposalVotesFn
+        trigger:
+          type: transaction
+          transaction:
+            status: MINED
+            filters:
+            - network: 42161
+              contract:
+                address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+              eventEmitted:
+                name: Vote
+                status: success
+      listenForVouches:
+        description: Notifies when a Participant has vouched for another participant
+        function: listen:listenForVouchesFn
+        trigger:
+          type: transaction
+          transaction:
+            status: MINED
+            filters:
+            - network: 42161
+              contract:
+                address: 0x43240c0f5dedb375afd28206e02110e8fed8cFc0
+              eventEmitted:
+                name: Vouch
+                status: success

@@ -6,6 +6,32 @@ import {
 import { ethers } from "ethers";
 import Weavr from "./Weavr.json"
 import {notifyDiscord} from "./discord";
+import {sendPushNotification} from "./push";
+
+
+
+
+
+function listenForEvent(event: string, txEvent: TransactionEvent, iface: ethers.utils.Interface) {
+	let result = null;
+	for (let i = 0; i < txEvent.logs.length; i++) {
+		try {
+			result = iface.decodeEventLog(event,
+				txEvent.logs[i].data, txEvent.logs[i].topics)
+		} catch (e) {
+			console.log("This event is not a Proposal", e)
+		}
+	}
+	return result
+}
+
+async function notifyChannels(message: string, context: Context, title: string = "") {
+	await notifyDiscord(message, context)
+	await sendPushNotification(title, message, "0x49C899a1fA59A7edf23c249d491805c9077bf62B", context)
+}
+
+
+
 
 /***
  * Listen for Proposal events and store them in the context to be used by the queue action
@@ -15,15 +41,7 @@ import {notifyDiscord} from "./discord";
 export const listenForProposalFn: ActionFn = async (context: Context, event: Event) => {
 	const txEvent = event as TransactionEvent;
 	let iface = new ethers.utils.Interface(Weavr.abi);
-	let result = null;
-	for (let i = 0; i < txEvent.logs.length; i++) {
-		try {
-			result = iface.decodeEventLog("Proposal",
-				txEvent.logs[i].data, txEvent.logs[i].topics)
-		} catch (e) {
-			console.log("This event is not a Proposal", e)
-		}
-	}
+	let result = listenForEvent("Proposal", txEvent, iface)
 	if(result === null) {
 		console.log("Did not find proposal event, exiting")
 		return
@@ -41,21 +59,13 @@ export const listenForProposalFn: ActionFn = async (context: Context, event: Eve
 	current_proposals.push(next_proposal)
 	await context.storage.putJson("current_proposals", current_proposals);
 	console.log("Proposal found: ", id, proposalType, creator, superMajority, info);
-	await notifyDiscord(`New Proposal ${id} has been detected! https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
+	await notifyChannels(`New Proposal ${id} has been detected! https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
 }
 
 export const UpdateOnProposalStateChangeFn: ActionFn = async (context: Context, event: Event) => {
 	const txEvent = event as TransactionEvent;
 	let iface = new ethers.utils.Interface(Weavr.abi);
-	let result = null;
-	for (let i = 0; i < txEvent.logs.length; i++) {
-		try {
-			result = iface.decodeEventLog("ProposalStateChange",
-				txEvent.logs[i].data, txEvent.logs[i].topics)
-		} catch (e) {
-			console.log("This event is not a ProposalStateChange", e)
-		}
-	}
+	let result = listenForEvent("ProposalStateChange", txEvent, iface)
 	if(result === null) {
 		console.log("Did not find ProposalStateChange event, exiting")
 		return
@@ -79,23 +89,13 @@ export const UpdateOnProposalStateChangeFn: ActionFn = async (context: Context, 
 		await context.storage.putJson("current_proposals", final_proposals)
 	}
 	console.log("Proposal withdrawn: ", id);
-	await notifyDiscord(`Proposal ${id} state is now ${state}, https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
+	await notifyChannels(`Proposal ${id} state is now ${state}, https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
 }
 
 export const UpdateOnParticipantStateChangeFn: ActionFn = async (context: Context, event: Event) => {
 	const txEvent = event as TransactionEvent;
 	let iface = new ethers.utils.Interface(Weavr.abi);
-	let result = null;
-	for (let i = 0; i < txEvent.logs.length; i++) {
-		try {
-			result = iface.decodeEventLog("ParticipantChange",
-				txEvent.logs[i].data, txEvent.logs[i].topics)
-			console.log("Found ParticipantChange event")
-
-		} catch (e) {
-			console.log("This event is not a ParticipantChange", e)
-		}
-	}
+	let result = listenForEvent("ParticipantChange", txEvent, iface)
 	if(result === null) {
 		console.log("Did not find ParticipantChange event, exiting")
 		return
@@ -112,5 +112,32 @@ export const UpdateOnParticipantStateChangeFn: ActionFn = async (context: Contex
 		"Corporate Member"
 		]
 	const state = PARTICIPANT_TYPE_ENUM[participantType]
-	await notifyDiscord(`participant ${participant} state is now ${state}`, context)
+	await notifyChannels(`participant ${participant} state is now ${state}`, context)
+}
+
+
+export const listenForProposalVotesFn: ActionFn = async (context: Context, event: Event) => {
+	const txEvent = event as TransactionEvent;
+	let iface = new ethers.utils.Interface(Weavr.abi);
+	let result = listenForEvent("Vote", txEvent, iface)
+	if(result === null) {
+		console.log("Did not find Vote event, exiting")
+		return
+	}
+	let {id, voter, votes} = result;
+	id = id.toString()
+	votes = (votes / 1e18).toString()
+	await notifyChannels(`${voter} has just voted on proposal #${id} with a voting weight of ${votes}`, context)
+}
+
+export const listenForVouchesFn: ActionFn = async (context: Context, event: Event) => {
+	const txEvent = event as TransactionEvent;
+	let iface = new ethers.utils.Interface(Weavr.abi);
+	let result = listenForEvent("Vouch", txEvent, iface)
+	if(result === null) {
+		console.log("Did not find Vouch event, exiting")
+		return
+	}
+	let {vouchee, voucher} = result;
+	await notifyChannels(`${voucher} has just vouched for for ${vouchee}, welcome.`, context)
 }
