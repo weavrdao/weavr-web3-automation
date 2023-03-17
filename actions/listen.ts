@@ -59,7 +59,7 @@ export const listenForProposalFn: ActionFn = async (context: Context, event: Eve
 	current_proposals.push(next_proposal)
 	await context.storage.putJson("current_proposals", current_proposals);
 	console.log("Proposal found: ", id, proposalType, creator, superMajority, info);
-	await notifyChannels(`New Proposal ${id} has been detected! https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
+	await notifyChannels(`New Proposal ${id} has been detected! https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context, "New Proposal Event")
 }
 
 export const UpdateOnProposalStateChangeFn: ActionFn = async (context: Context, event: Event) => {
@@ -89,7 +89,7 @@ export const UpdateOnProposalStateChangeFn: ActionFn = async (context: Context, 
 		await context.storage.putJson("current_proposals", final_proposals)
 	}
 	console.log("Proposal withdrawn: ", id);
-	await notifyChannels(`Proposal ${id} state is now ${state}, https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context)
+	await notifyChannels(`Proposal ${id} state is now ${state}, https://www.weavr.org/#/dao/0x43240c0f5dedb375afd28206e02110e8fed8cFc0/proposal/${id}`, context, "Proposal State Change Event")
 }
 
 export const UpdateOnParticipantStateChangeFn: ActionFn = async (context: Context, event: Event) => {
@@ -112,7 +112,7 @@ export const UpdateOnParticipantStateChangeFn: ActionFn = async (context: Contex
 		"Corporate Member"
 		]
 	const state = PARTICIPANT_TYPE_ENUM[participantType]
-	await notifyChannels(`participant ${participant} state is now ${state}`, context)
+	await notifyChannels(`participant ${participant} state is now ${state}`, context, "Participant State Change Event")
 }
 
 
@@ -127,7 +127,7 @@ export const listenForProposalVotesFn: ActionFn = async (context: Context, event
 	let {id, voter, votes} = result;
 	id = id.toString()
 	votes = (votes / 1e18).toString()
-	await notifyChannels(`${voter} has just voted on proposal #${id} with a voting weight of ${votes}`, context)
+	await notifyChannels(`${voter} has just voted on proposal #${id} with a voting weight of ${votes}`, context, "Proposal Vote Event")
 }
 
 export const listenForVouchesFn: ActionFn = async (context: Context, event: Event) => {
@@ -139,5 +139,5 @@ export const listenForVouchesFn: ActionFn = async (context: Context, event: Even
 		return
 	}
 	let {vouchee, voucher} = result;
-	await notifyChannels(`${voucher} has just vouched for for ${vouchee}, welcome.`, context)
+	await notifyChannels(`${voucher} has just vouched for for ${vouchee}, welcome.`, context, "Vouch Event")
 }

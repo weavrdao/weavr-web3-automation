@@ -3,11 +3,10 @@ import * as ethers from "ethers";
 import {Context} from "@tenderly/actions";
 import {ENV} from "@pushprotocol/restapi/src/lib/constants";
 
-const PK = 'your_channel_address_secret_key'; // channel private key
-const Pkey = `0x${PK}`;
-const _signer = new ethers.Wallet(Pkey);
 
 export const sendPushNotification = async(type:string, text: string, channel: string, context: Context) => {
+    const secret_key = await context.secrets.get("pushPrivateKey")
+    const _signer = new ethers.Wallet(secret_key);
         console.log('Sending to Push:', `🐥 ${text}`)
          await PushAPI.payloads.sendNotification({
             signer: _signer,
@@ -20,11 +19,11 @@ export const sendPushNotification = async(type:string, text: string, channel: st
             payload: {
                 title: type,
                 body: text,
-                cta: '',
+                cta: 'Check WeavrDAO for the latest Updates',
                 img: ''
             },
-            channel: `eip155:5:${channel}`, // your channel address
-            env: ENV.STAGING
+            channel: `eip155:1:${channel}`, // your channel address
+            env: ENV.PROD
         });
 
 }

@@ -6,10 +6,11 @@
         "noUnusedLocals": true,
         "outDir": "out",
         "sourceMap": true,
-        "strict": true,
-        "target": "es2020",
+        "strict": false,
+        "target": "es2019",
         "resolveJsonModule": true,
         "esModuleInterop": true,
+        "skipLibCheck": true,
     },
     "exclude": [
         "**/*.spec.ts"
