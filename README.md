@@ -1,4 +1,4 @@
-# Governance Proposal Automation using Tenderly
+# Web3 Automation/Notification using Tenderly
 
 This repository creates the scripts and automation systems to detect and interact with WeavrDAO on-chain proposal infrastructure on the Arbitrum blockchain using Tenderlys [web3 actions](https://docs.tenderly.co/web3-actions).
 
